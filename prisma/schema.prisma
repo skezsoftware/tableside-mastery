@@ -1,0 +1,83 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id Int @id @default(autoincrement())
+  email String @unique
+  password String // Hashed password
+  name String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  shifts Shift[]
+}
+
+// Enter all data from your shift and sales report
+model Shift {
+  id Int @id @default(autoincrement())
+  date DateTime
+  dayOfWeek String
+  checks Int
+  covers Int
+  netRevenue Float
+  totalWithTax Float
+  averageCheckPerCover Float
+  wineSales Float
+  winePercent Float
+  beerSales Float
+  beerPercent Float
+  liquorSales Float
+  liquorPercent Float
+  foodSales Float
+  foodPercent Float
+  creditTips Float
+  cashTips Float
+  totalTips Float
+  averageTipPercent Float
+  creditTipsAfterTipout Float
+  tipoutPercent Float
+  notes String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId Int
+  user User @relation(fields: [userId], references: [id])
+
+  soldItems SoldItem[]
+}
+
+model MenuItem {
+  id Int @id @default(autoincrement())
+  name String
+  price Float
+  category String
+  isSpecial Boolean @default(false)
+
+  soldItems SoldItem[]
+}
+
+model SoldItem {
+  id Int @id @default(autoincrement())
+  shiftId Int
+  menuItemId Int
+  quantity Int @default(1)
+
+  shift Shift @relation(fields: [shiftId], references: [id])
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id])
+
+  @@index([shiftId])
+  @@index([menuItemId])
+}
