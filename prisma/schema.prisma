@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/prisma"
@@ -15,67 +9,127 @@ datasource db {
 }
 
 model User {
-  id Int @id @default(autoincrement())
-  email String @unique
-  password String // Hashed password
-  name String?
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String // Hashed password
+  name      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  shifts Shift[]
+  shifts           Shift[]
+  userRestaurants  UserRestaurant[]
+}
+
+model Restaurant {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userRestaurants UserRestaurant[]
+  menuItems       MenuItem[]
+  shifts          Shift[]
+}
+
+model UserRestaurant {
+  id           Int @id @default(autoincrement())
+  userId       Int
+  restaurantId Int
+  createdAt    DateTime @default(now())
+  
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, restaurantId])
+  @@index([userId])
+  @@index([restaurantId])
 }
 
 // Enter all data from your shift and sales report
 model Shift {
-  id Int @id @default(autoincrement())
-  date DateTime
-  dayOfWeek String
-  checks Int
-  covers Int
-  netRevenue Float
-  totalWithTax Float
-  averageCheckPerCover Float
-  wineSales Float
-  winePercent Float
-  beerSales Float
-  beerPercent Float
-  liquorSales Float
-  liquorPercent Float
-  foodSales Float
-  foodPercent Float
-  creditTips Float
-  cashTips Float
-  totalTips Float
-  averageTipPercent Float
+  id                    Int      @id @default(autoincrement())
+  date                  DateTime
+  dayOfWeek             String
+  checks                Int
+  covers                Int
+  netRevenue            Float
+  totalWithTax          Float
+  averageCheckPerCover  Float
+  wineSales             Float
+  winePercent           Float
+  beerSales             Float
+  beerPercent           Float
+  liquorSales           Float
+  liquorPercent         Float
+  foodSales             Float
+  foodPercent           Float
+  creditTips            Float
+  cashTips              Float
+  totalTips             Float
+  averageTipPercent     Float
   creditTipsAfterTipout Float
-  tipoutPercent Float
-  notes String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  tipoutPercent         Float
+  notes                 String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
-  userId Int
-  user User @relation(fields: [userId], references: [id])
+  clockIn               DateTime?
+  clockOut              DateTime?
+  hoursWorked           Float?
+  hourlyWage            Float?
 
-  soldItems SoldItem[]
+  restaurantId Int
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  userId       Int
+  user         User       @relation(fields: [userId], references: [id])
+
+  soldItems  SoldItem[]
+  shiftNotes ShiftNote[]
+}
+
+model ShiftNote {
+  id      Int    @id @default(autoincrement())
+  content String
+  shiftId Int
+
+  shift Shift @relation(fields: [shiftId], references: [id])
+}
+
+enum MenuCategory {
+  FOOD
+  WINE
+  BEER
+  LIQUOR
+  COCKTAILS
+  OTHER
 }
 
 model MenuItem {
-  id Int @id @default(autoincrement())
-  name String
-  price Float
-  category String
-  isSpecial Boolean @default(false)
+  id           Int          @id @default(autoincrement())
+  name         String
+  price        Float
+  category     MenuCategory
+  isSpecial    Boolean      @default(false)
+  restaurantId Int
+  restaurant   Restaurant   @relation(fields: [restaurantId], references: [id])
 
   soldItems SoldItem[]
 }
 
-model SoldItem {
-  id Int @id @default(autoincrement())
-  shiftId Int
-  menuItemId Int
-  quantity Int @default(1)
+enum WinePourSize {
+  SIX_OZ
+  NINE_OZ
+  BOTTLE
+}
 
-  shift Shift @relation(fields: [shiftId], references: [id])
+model SoldItem {
+  id         Int           @id @default(autoincrement())
+  shiftId    Int
+  menuItemId Int
+  quantity   Int           @default(1)
+  pourSize   WinePourSize? // Only applicable for wine items
+
+  shift    Shift    @relation(fields: [shiftId], references: [id])
   menuItem MenuItem @relation(fields: [menuItemId], references: [id])
 
   @@index([shiftId])
