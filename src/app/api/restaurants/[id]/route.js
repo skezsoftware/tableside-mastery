@@ -51,8 +51,15 @@ export async function GET(request, { params }) {
       shifts: restaurant.shifts.map(shift => ({
         id: shift.id,
         date: shift.date,
+        dayOfWeek: shift.dayOfWeek,
+        checks: shift.checks,
+        covers: shift.covers,
         netRevenue: shift.netRevenue,
         totalWithTax: shift.totalWithTax,
+        wineSales: shift.wineSales,
+        beerSales: shift.beerSales,
+        liquorSales: shift.liquorSales,
+        foodSales: shift.foodSales,
         creditTips: shift.creditTips,
         cashTips: shift.cashTips
       }))
