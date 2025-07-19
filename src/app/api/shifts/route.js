@@ -1,98 +1,108 @@
-import { NextResponse } from 'next/server';
-import { PrismaClient } from '../../../generated/prisma';
+// SHIFTS API ROUTE
+import { NextResponse } from "next/server";
+import { PrismaClient } from "../../../generated/prisma";
 
 const prisma = new PrismaClient();
 
-// POST - Create new shift
+// HELPER FUNCTIONS TO REDUCE REPETITION
+const parseFloatSafe = (value) => parseFloat(value || 0);
+const parseIntSafe = (value) => parseInt(value, 10) || 0;
+
+const calculateTipPercentage = (totalTips, netRevenue) => {
+  const revenue = parseFloatSafe(netRevenue);
+  return revenue > 0 ? (totalTips / revenue) * 100 : 0;
+};
+
+// POST - CREATE A NEW SHIFT
 export async function POST(request) {
   try {
-    const userId = request.headers.get('user-id');
-    
+    const userId = request.headers.get("user-id");
+
     if (!userId) {
-      return NextResponse.json(
-        { error: 'User ID required' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "User ID required" }, { status: 401 });
     }
 
-    const { 
-      restaurantId, 
-      date, 
-      netRevenue, 
-      totalWithTax, 
-      creditTips, 
+    const {
+      restaurantId,
+      date,
+      netRevenue,
+      totalWithTax,
+      creditTips,
       cashTips,
-      checks = 0, // Default to 0 if not provided
-      covers = 0, // Default to 0 if not provided
-      averageCheckPerCover = 0, // Default to 0 if not provided
-      wineSales = 0, // Default to 0 if not provided
-      winePercent = 0, // Default to 0 if not provided
-      beerSales = 0, // Default to 0 if not provided
-      beerPercent = 0, // Default to 0 if not provided
-      liquorSales = 0, // Default to 0 if not provided
-      liquorPercent = 0, // Default to 0 if not provided
-      foodSales = 0, // Default to 0 if not provided
-      foodPercent = 0 // Default to 0 if not provided 
+      checks,
+      covers,
+      averageCheckPerCover,
+      wineSales,
+      winePercent,
+      beerSales,
+      beerPercent,
+      liquorSales,
+      liquorPercent,
+      foodSales,
+      foodPercent,
     } = await request.json();
 
-    // Validate required fields
+    // VALIDATE REQUIRED FIELDS
     if (!restaurantId || !date || !netRevenue || !totalWithTax) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: "Missing required fields" },
         { status: 400 }
       );
     }
 
-    // Verify user has access to restaurant
+    // VERIFY USER ACCESS TO RESTAURANT
     const userRestaurant = await prisma.userRestaurant.findFirst({
       where: {
         userId: parseInt(userId),
-        restaurantId: parseInt(restaurantId)
-      }
+        restaurantId: parseInt(restaurantId),
+      },
     });
 
     if (!userRestaurant) {
-      return NextResponse.json(
-        { error: 'Access denied' },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
-    // Get day of week from date
-    const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'long' });
+    // GET DAY OF WEEK
+    const dayOfWeek = new Date(date).toLocaleDateString("en-US", {
+      weekday: "long",
+    });
 
-    // Create the shift
+    // CALCULATE TOTAL TIPS ONCE
+    const totalTips = parseFloatSafe(creditTips) + parseFloatSafe(cashTips);
+
+    // CREATE THE SHIFT
     const shift = await prisma.shift.create({
       data: {
         date: new Date(date),
         dayOfWeek,
-        checks: parseInt(checks, 10) || 0,
-        covers: parseInt(covers, 10) || 0,
-        netRevenue: parseFloat(netRevenue) || 0,
-        totalWithTax: parseFloat(totalWithTax) || 0,
-        averageCheckPerCover: parseFloat(averageCheckPerCover) || 0,
-        wineSales: parseFloat(wineSales || 0),
-        winePercent: parseFloat(winePercent || 0),
-        beerSales: parseFloat(beerSales || 0),
-        beerPercent: parseFloat(beerPercent || 0),
-        liquorSales: parseFloat(liquorSales || 0),
-        liquorPercent: parseFloat(liquorPercent || 0),
-        foodSales: parseFloat(foodSales || 0),
-        foodPercent: parseFloat(foodPercent || 0),
-        creditTips: parseFloat(creditTips || 0),
-        cashTips: parseFloat(cashTips || 0),
-        totalTips: parseFloat(creditTips || 0) + parseFloat(cashTips || 0),
-        averageTipPercent: parseFloat(((parseFloat(creditTips || 0) + parseFloat(cashTips || 0)) / parseFloat(netRevenue || 1)) * 100) || 0,
-        creditTipsAfterTipout: parseFloat(creditTips || 0),
+        checks: parseIntSafe(checks),
+        covers: parseIntSafe(covers),
+        netRevenue: parseFloatSafe(netRevenue),
+        totalWithTax: parseFloatSafe(totalWithTax),
+        averageCheckPerCover: parseFloatSafe(averageCheckPerCover),
+        wineSales: parseFloatSafe(wineSales),
+        winePercent: parseFloatSafe(winePercent),
+        beerSales: parseFloatSafe(beerSales),
+        beerPercent: parseFloatSafe(beerPercent),
+        liquorSales: parseFloatSafe(liquorSales),
+        liquorPercent: parseFloatSafe(liquorPercent),
+        foodSales: parseFloatSafe(foodSales),
+        foodPercent: parseFloatSafe(foodPercent),
+        creditTips: parseFloatSafe(creditTips),
+        cashTips: parseFloatSafe(cashTips),
+        totalTips: totalTips,
+        averageTipPercent: calculateTipPercentage(totalTips, netRevenue),
+        creditTipsAfterTipout: parseFloatSafe(creditTips),
         tipoutPercent: 0, // Assuming no tipout percent for now
         restaurantId: parseInt(restaurantId),
-        userId: parseInt(userId)
-      }
+        userId: parseInt(userId),
+      },
     });
 
+    // RETURN SUCCESS RESPONSE
     return NextResponse.json(
-      { 
-        message: 'Shift created successfully',
+      {
+        message: "Shift created successfully",
         shift: {
           id: shift.id,
           date: shift.date,
@@ -114,16 +124,15 @@ export async function POST(request) {
           averageTipPercent: shift.averageTipPercent,
           creditTipsAfterTipout: shift.creditTipsAfterTipout,
           creditTips: shift.creditTips,
-          cashTips: shift.cashTips
-        }
+          cashTips: shift.cashTips,
+        },
       },
       { status: 201 }
     );
-
   } catch (error) {
-    console.error('Create shift error:', error);
+    console.error("Create shift error:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }

@@ -1,5 +1,4 @@
 // SHIFT DATA ENTRY FORM PAGE
-
 "use client";
 import Link from "next/link";
 
@@ -15,7 +14,7 @@ export default function RestaurantDashboard() {
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Form state
+  // SHIFT DATA STATE
   const [shiftData, setShiftData] = useState({
     date: "",
     dayOfWeek: "",
@@ -35,6 +34,7 @@ export default function RestaurantDashboard() {
     fetchRestaurantData();
   }, [restaurantId]);
 
+  // FETCH RESTAURANT DATA AND SHIFTS
   const fetchRestaurantData = async () => {
     try {
       const response = await fetch(`/api/restaurants/${restaurantId}`, {
@@ -77,7 +77,7 @@ export default function RestaurantDashboard() {
         const data = await response.json();
         console.log("Shift created:", data);
 
-        // Clear form and hide it
+        // CLEAR FORM AND HIDE IT
         setShiftData({
           date: "",
           dayOfWeek: "",
@@ -94,7 +94,7 @@ export default function RestaurantDashboard() {
         });
         setShowForm(false);
 
-        // Refresh the data
+        // REFRESH THE DATA
         fetchRestaurantData();
       } else {
         console.error("Failed to create shift");
@@ -133,7 +133,7 @@ export default function RestaurantDashboard() {
     hoursWorked: "Hours Worked",
     hourlyWage: "Hourly Wage",
   };
-  
+
   return (
     <main className="restaurants-container">
       <div className="dashboard-header">
@@ -145,7 +145,7 @@ export default function RestaurantDashboard() {
         </h1>
       </div>
 
-      {/* Shifts List */}
+      {/* SHIFTS LIST */}
       <section className="shifts-list">
         {shifts.length === 0 ? (
           <p>No shifts yet. Add your first shift!</p>
@@ -158,8 +158,8 @@ export default function RestaurantDashboard() {
                     <strong>{keyLabels[key] || key}:</strong>{" "}
                     {key === "date"
                       ? new Date(value).toLocaleDateString("en-US", {
-                        timeZone: "UTC",}
-                      )
+                          timeZone: "UTC",
+                        })
                       : value.toString()}
                   </div>
                 ))}
@@ -168,9 +168,8 @@ export default function RestaurantDashboard() {
           ))
         )}
       </section>
-      
 
-      {/* Add Shift Form */}
+      {/* ADD SHIFT FORM */}
       {showForm && (
         <form className="add-restaurant-form" onSubmit={handleSubmit}>
           {/* Date Selector */}

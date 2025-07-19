@@ -1,3 +1,4 @@
+// REGISTER API ROUTE
 import { NextResponse } from "next/server";
 import bcrypt from "bcrypt";
 import { PrismaClient } from "../../../generated/prisma";

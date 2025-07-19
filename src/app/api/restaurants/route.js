@@ -1,3 +1,4 @@
+// RESTAURANT API ROUTE
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '../../../generated/prisma';
 
