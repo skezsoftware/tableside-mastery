@@ -108,6 +108,32 @@ export default function RestaurantDashboard() {
     return <div className="restaurants-container">Loading...</div>;
   }
   console.log("shifts", shifts);
+
+  const keyLabels = {
+    id: "ID",
+    date: "Date",
+    dayOfWeek: "Day of Week",
+    checks: "Checks",
+    covers: "Covers",
+    netRevenue: "Net Revenue",
+    totalWithTax: "Total with Tax",
+    wineSales: "Wine Sales",
+    beerSales: "Beer Sales",
+    liquorSales: "Liquor Sales",
+    foodSales: "Food Sales",
+    creditTips: "Credit Tips",
+    cashTips: "Cash Tips",
+    totalTips: "Total Tips",
+    averageTipPercent: "Average Tip Percent",
+    creditTipsAfterTipout: "Credit Tips After Tipout",
+    tipoutPercent: "Tipout Percent",
+    notes: "Notes",
+    clockIn: "Clock In",
+    clockOut: "Clock Out",
+    hoursWorked: "Hours Worked",
+    hourlyWage: "Hourly Wage",
+  };
+  
   return (
     <main className="restaurants-container">
       <div className="dashboard-header">
@@ -129,7 +155,7 @@ export default function RestaurantDashboard() {
               <div className="shift-info">
                 {Object.entries(shift).map(([key, value]) => (
                   <div key={key} className={`shift-${key}`}>
-                    <strong>{key}:</strong>{" "}
+                    <strong>{keyLabels[key] || key}:</strong>{" "}
                     {key === "date"
                       ? new Date(value).toLocaleDateString("en-US", {
                         timeZone: "UTC",}

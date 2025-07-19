@@ -21,7 +21,18 @@ export async function POST(request) {
       netRevenue, 
       totalWithTax, 
       creditTips, 
-      cashTips 
+      cashTips,
+      checks = 0, // Default to 0 if not provided
+      covers = 0, // Default to 0 if not provided
+      averageCheckPerCover = 0, // Default to 0 if not provided
+      wineSales = 0, // Default to 0 if not provided
+      winePercent = 0, // Default to 0 if not provided
+      beerSales = 0, // Default to 0 if not provided
+      beerPercent = 0, // Default to 0 if not provided
+      liquorSales = 0, // Default to 0 if not provided
+      liquorPercent = 0, // Default to 0 if not provided
+      foodSales = 0, // Default to 0 if not provided
+      foodPercent = 0 // Default to 0 if not provided 
     } = await request.json();
 
     // Validate required fields
@@ -55,25 +66,25 @@ export async function POST(request) {
       data: {
         date: new Date(date),
         dayOfWeek,
-        checks, // Add default values for required fields
-        covers,
-        netRevenue: parseFloat(netRevenue),
-        totalWithTax: parseFloat(totalWithTax),
-        averageCheckPerCover,
-        wineSales,
-        winePercent,
-        beerSales,
-        beerPercent,
-        liquorSales,
-        liquorPercent,
-        foodSales,
-        foodPercent,
+        checks: parseInt(checks, 10) || 0,
+        covers: parseInt(covers, 10) || 0,
+        netRevenue: parseFloat(netRevenue) || 0,
+        totalWithTax: parseFloat(totalWithTax) || 0,
+        averageCheckPerCover: parseFloat(averageCheckPerCover) || 0,
+        wineSales: parseFloat(wineSales || 0),
+        winePercent: parseFloat(winePercent || 0),
+        beerSales: parseFloat(beerSales || 0),
+        beerPercent: parseFloat(beerPercent || 0),
+        liquorSales: parseFloat(liquorSales || 0),
+        liquorPercent: parseFloat(liquorPercent || 0),
+        foodSales: parseFloat(foodSales || 0),
+        foodPercent: parseFloat(foodPercent || 0),
         creditTips: parseFloat(creditTips || 0),
         cashTips: parseFloat(cashTips || 0),
         totalTips: parseFloat(creditTips || 0) + parseFloat(cashTips || 0),
-        averageTipPercent: 0,
+        averageTipPercent: parseFloat(((parseFloat(creditTips || 0) + parseFloat(cashTips || 0)) / parseFloat(netRevenue || 1)) * 100) || 0,
         creditTipsAfterTipout: parseFloat(creditTips || 0),
-        tipoutPercent: 0,
+        tipoutPercent: 0, // Assuming no tipout percent for now
         restaurantId: parseInt(restaurantId),
         userId: parseInt(userId)
       }
@@ -85,8 +96,23 @@ export async function POST(request) {
         shift: {
           id: shift.id,
           date: shift.date,
+          dayOfWeek: shift.dayOfWeek,
+          checks: shift.checks,
+          covers: shift.covers,
           netRevenue: shift.netRevenue,
           totalWithTax: shift.totalWithTax,
+          averageCheckPerCover: shift.averageCheckPerCover,
+          wineSales: shift.wineSales,
+          winePercent: shift.winePercent,
+          beerSales: shift.beerSales,
+          beerPercent: shift.beerPercent,
+          liquorSales: shift.liquorSales,
+          liquorPercent: shift.liquorPercent,
+          foodSales: shift.foodSales,
+          foodPercent: shift.foodPercent,
+          totalTips: shift.totalTips,
+          averageTipPercent: shift.averageTipPercent,
+          creditTipsAfterTipout: shift.creditTipsAfterTipout,
           creditTips: shift.creditTips,
           cashTips: shift.cashTips
         }
