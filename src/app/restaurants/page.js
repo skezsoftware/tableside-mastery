@@ -1,24 +1,31 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import "./restaurants.css";
 
 export default function Restaurants() {
+  const router = useRouter();
+  
+  // COMPONENT STATE
   const [showForm, setShowForm] = useState(false);
   const [restaurantName, setRestaurantName] = useState("");
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
-  // Fetch restaurants when page loads
+  // FETCH RESTAURANTS ON PAGE LOAD
   useEffect(() => {
     fetchRestaurants();
   }, []);
 
+  // FETCH RESTAURANTS FROM API
   const fetchRestaurants = async () => {
     try {
       const response = await fetch('/api/restaurants', {
         headers: {
-          'user-id': '1' // We'll make this dynamic later
+          'user-id': '1' // TODO: Make this dynamic based on logged-in user
         }
       });
       
@@ -26,24 +33,29 @@ export default function Restaurants() {
         const data = await response.json();
         setRestaurants(data);
       } else {
+        setError('Failed to fetch restaurants');
         console.error('Failed to fetch restaurants');
       }
     } catch (error) {
+      setError('Error loading restaurants');
       console.error('Error fetching restaurants:', error);
     } finally {
       setLoading(false);
     }
   };
 
+  // HANDLE RESTAURANT FORM SUBMISSION
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setError("");
     
     try {
       const response = await fetch('/api/restaurants', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'user-id': '1' // We'll make this dynamic later
+          'user-id': '1' // TODO: Make this dynamic based on logged-in user
         },
         body: JSON.stringify({ name: restaurantName })
       });
@@ -59,18 +71,34 @@ export default function Restaurants() {
         // Refresh the restaurants list
         fetchRestaurants();
       } else {
+        setError('Failed to create restaurant');
         console.error('Failed to create restaurant');
       }
     } catch (error) {
+      setError('Error creating restaurant');
       console.error('Error creating restaurant:', error);
+    } finally {
+      setIsSubmitting(false);
     }
+  };
+
+  // NAVIGATE TO RESTAURANT DASHBOARD
+  const handleRestaurantClick = (restaurantId) => {
+    router.push(`/restaurants/${restaurantId}`);
   };
 
   return (
     <main className="restaurants-container">
       <h1 className="restaurants-title">Your Restaurants</h1>
 
-      {/* Restaurant List */}
+      {/* ERROR MESSAGE */}
+      {error && (
+        <div className="error-message" role="alert">
+          {error}
+        </div>
+      )}
+
+      {/* RESTAURANT LIST */}
       <section className="restaurants-list">
         {loading ? (
           <p>Loading restaurants...</p>
@@ -81,9 +109,7 @@ export default function Restaurants() {
             <article
               key={restaurant.id}
               className="restaurant-card"
-              onClick={() =>
-                (window.location.href = `/restaurants/${restaurant.id}`)
-              }
+              onClick={() => handleRestaurantClick(restaurant.id)}
             >
               <span className="restaurant-name">{restaurant.name}</span>
             </article>
@@ -91,7 +117,7 @@ export default function Restaurants() {
         )}
       </section>
 
-      {/* Add Restautant Form */}
+      {/* ADD RESTAURANT FORM */}
       {showForm && (
         <form className="add-restaurant-form" onSubmit={handleSubmit}>
           <input
@@ -101,15 +127,21 @@ export default function Restaurants() {
             onChange={(e) => setRestaurantName(e.target.value)}
             className="restaurant-input"
             required
+            disabled={isSubmitting}
           />
           <div className="restaurant-form-buttons">
-            <button type="submit" className="submit-button">
-              Create Restaurant
+            <button 
+              type="submit" 
+              className="submit-button"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Creating...' : 'Create Restaurant'}
             </button>
             <button
               type="button"
               className="cancel-button"
               onClick={() => setShowForm(false)}
+              disabled={isSubmitting}
             >
               Cancel
             </button>
@@ -117,7 +149,7 @@ export default function Restaurants() {
         </form>
       )}
 
-      {/* Add Restaurant Button */}
+      {/* ADD RESTAURANT BUTTON */}
       {!showForm && (
         <button
           className="add-restaurant-button"

@@ -17,10 +17,16 @@ export default function RestaurantDashboard() {
     }).format(value);
   };
 
+  // HELPER FUNCTION TO FORMAT PERCENTAGE VALUES
+  const formatPercentageValue = (value) => {
+    return `${parseFloat(value).toFixed(2)}%`;
+  };
+
   // LIST OF MONETARY FIELDS TO FORMAT
   const monetaryFields = [
     "netRevenue",
     "totalWithTax",
+    "averageCheckPerCover",
     "wineSales",
     "beerSales",
     "liquorSales",
@@ -30,6 +36,16 @@ export default function RestaurantDashboard() {
     "totalTips",
     "creditTipsAfterTipout",
     "hourlyWage",
+  ];
+
+  // LIST OF PERCENTAGE FIELDS TO FORMAT
+  const percentageFields = [
+    "winePercent",
+    "beerPercent",
+    "liquorPercent",
+    "foodPercent",
+    "averageTipPercent",
+    "tipoutPercent",
   ];
 
   // RESTAURANT DATA STATE
@@ -45,6 +61,7 @@ export default function RestaurantDashboard() {
     checks: "",
     covers: "",
     netRevenue: "",
+    tax: "",
     totalWithTax: "",
     wineSales: "",
     beerSales: "",
@@ -52,6 +69,7 @@ export default function RestaurantDashboard() {
     foodSales: "",
     creditTips: "",
     cashTips: "",
+    tipoutAmount: "",
   });
 
   useEffect(() => {
@@ -109,6 +127,7 @@ export default function RestaurantDashboard() {
           checks: "",
           covers: "",
           netRevenue: "",
+          tax: "",
           totalWithTax: "",
           wineSales: "",
           beerSales: "",
@@ -116,6 +135,7 @@ export default function RestaurantDashboard() {
           foodSales: "",
           creditTips: "",
           cashTips: "",
+          tipoutAmount: "",
         });
         setShowForm(false);
 
@@ -144,16 +164,21 @@ export default function RestaurantDashboard() {
     covers: "Covers",
     netRevenue: "Net Revenue",
     totalWithTax: "Total with Tax",
+    averageCheckPerCover: "Avg Check Per Cover",
     wineSales: "Wine Sales",
+    winePercent: "Wine % of Sales",
     beerSales: "Beer Sales",
+    beerPercent: "Beer % of Sales",
     liquorSales: "Liquor Sales",
+    liquorPercent: "Liquor % of Sales",
     foodSales: "Food Sales",
+    foodPercent: "Food % of Sales",
     creditTips: "Credit Tips",
     cashTips: "Cash Tips",
     totalTips: "Total Tips",
-    averageTipPercent: "Average Tip Percent",
+    averageTipPercent: "Avg Tip %",
     creditTipsAfterTipout: "Credit Tips After Tipout",
-    tipoutPercent: "Tipout Percent",
+    tipoutPercent: "Tipout %",
     notes: "Notes",
     clockIn: "Clock In",
     clockOut: "Clock Out",
@@ -190,6 +215,8 @@ export default function RestaurantDashboard() {
                         })
                       : monetaryFields.includes(key)
                       ? formatMonetaryValue(value)
+                      : percentageFields.includes(key)
+                      ? formatPercentageValue(value)
                       : value.toString()}
                   </div>
                 ))}
@@ -242,6 +269,7 @@ export default function RestaurantDashboard() {
           />
 
           {/* Total Covers */}
+          <label>Total Covers</label>
           <input
             type="number"
             placeholder="Total Covers"
@@ -268,10 +296,25 @@ export default function RestaurantDashboard() {
             required
           />
 
-          {/* Net Revenue + Tax */}
+          {/* Tax Amount */}
+          <label>Tax Amount</label>
           <input
             type="number"
-            placeholder="Net Revenue + Tax"
+            placeholder="Tax Amount"
+            value={shiftData.tax}
+            onChange={(e) =>
+              setShiftData({ ...shiftData, tax: e.target.value })
+            }
+            className="restaurant-input"
+            step="0.01"
+            required
+          />
+
+          {/* Total with Tax (Calculated) */}
+          <label>Total with Tax (Calculated)</label>
+          <input
+            type="number"
+            placeholder="Total with Tax"
             value={shiftData.totalWithTax}
             onChange={(e) =>
               setShiftData({ ...shiftData, totalWithTax: e.target.value })
@@ -363,6 +406,20 @@ export default function RestaurantDashboard() {
             value={shiftData.cashTips}
             onChange={(e) =>
               setShiftData({ ...shiftData, cashTips: e.target.value })
+            }
+            className="restaurant-input"
+            step="0.01"
+            required
+          />
+
+          {/* TIPOUT AMOUNT */}
+          <label>Tipout Amount</label>
+          <input
+            type="number"
+            placeholder="Tipout Amount"
+            value={shiftData.tipoutAmount}
+            onChange={(e) =>
+              setShiftData({ ...shiftData, tipoutAmount: e.target.value })
             }
             className="restaurant-input"
             step="0.01"

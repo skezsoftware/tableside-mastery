@@ -13,6 +13,21 @@ const calculateTipPercentage = (totalTips, netRevenue) => {
   return revenue > 0 ? (totalTips / revenue) * 100 : 0;
 };
 
+const calculatePercentageOfSales = (salesAmount, netRevenue) => {
+  const revenue = parseFloatSafe(netRevenue);
+  return revenue > 0 ? (parseFloatSafe(salesAmount) / revenue) * 100 : 0;
+};
+
+const calculateAverageCheckPerCover = (netRevenue, covers) => {
+  const coversCount = parseFloatSafe(covers);
+  return coversCount > 0 ? parseFloatSafe(netRevenue) / coversCount : 0;
+};
+
+const calculateTipoutPercentage = (creditTips, creditTipsAfterTipout) => {
+  const tips = parseFloatSafe(creditTips);
+  return tips > 0 ? ((tips - parseFloatSafe(creditTipsAfterTipout)) / tips) * 100 : 0;
+};
+
 // POST - CREATE A NEW SHIFT
 export async function POST(request) {
   try {
@@ -26,24 +41,21 @@ export async function POST(request) {
       restaurantId,
       date,
       netRevenue,
+      tax,
       totalWithTax,
       creditTips,
       cashTips,
+      tipoutAmount,
       checks,
       covers,
-      averageCheckPerCover,
       wineSales,
-      winePercent,
       beerSales,
-      beerPercent,
       liquorSales,
-      liquorPercent,
       foodSales,
-      foodPercent,
     } = await request.json();
 
     // VALIDATE REQUIRED FIELDS
-    if (!restaurantId || !date || !netRevenue || !totalWithTax) {
+    if (!restaurantId || !date || !netRevenue || !tax) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -67,8 +79,17 @@ export async function POST(request) {
       weekday: "long",
     });
 
-    // CALCULATE TOTAL TIPS ONCE
+    // CALCULATE ALL DERIVED VALUES
     const totalTips = parseFloatSafe(creditTips) + parseFloatSafe(cashTips);
+    const calculatedTotalWithTax = parseFloatSafe(netRevenue) + parseFloatSafe(tax);
+    const averageCheckPerCover = calculateAverageCheckPerCover(netRevenue, covers);
+    const winePercent = calculatePercentageOfSales(wineSales, netRevenue);
+    const beerPercent = calculatePercentageOfSales(beerSales, netRevenue);
+    const liquorPercent = calculatePercentageOfSales(liquorSales, netRevenue);
+    const foodPercent = calculatePercentageOfSales(foodSales, netRevenue);
+    const averageTipPercent = calculateTipPercentage(totalTips, netRevenue);
+    const creditTipsAfterTipout = parseFloatSafe(creditTips) - parseFloatSafe(tipoutAmount);
+    const tipoutPercent = calculateTipoutPercentage(creditTips, creditTipsAfterTipout);
 
     // CREATE THE SHIFT
     const shift = await prisma.shift.create({
@@ -78,22 +99,22 @@ export async function POST(request) {
         checks: parseIntSafe(checks),
         covers: parseIntSafe(covers),
         netRevenue: parseFloatSafe(netRevenue),
-        totalWithTax: parseFloatSafe(totalWithTax),
-        averageCheckPerCover: parseFloatSafe(averageCheckPerCover),
+        totalWithTax: calculatedTotalWithTax,
+        averageCheckPerCover: averageCheckPerCover,
         wineSales: parseFloatSafe(wineSales),
-        winePercent: parseFloatSafe(winePercent),
+        winePercent: winePercent,
         beerSales: parseFloatSafe(beerSales),
-        beerPercent: parseFloatSafe(beerPercent),
+        beerPercent: beerPercent,
         liquorSales: parseFloatSafe(liquorSales),
-        liquorPercent: parseFloatSafe(liquorPercent),
+        liquorPercent: liquorPercent,
         foodSales: parseFloatSafe(foodSales),
-        foodPercent: parseFloatSafe(foodPercent),
+        foodPercent: foodPercent,
         creditTips: parseFloatSafe(creditTips),
         cashTips: parseFloatSafe(cashTips),
         totalTips: totalTips,
-        averageTipPercent: calculateTipPercentage(totalTips, netRevenue),
-        creditTipsAfterTipout: parseFloatSafe(creditTips),
-        tipoutPercent: 0, // Assuming no tipout percent for now
+        averageTipPercent: averageTipPercent,
+        creditTipsAfterTipout: creditTipsAfterTipout,
+        tipoutPercent: tipoutPercent,
         restaurantId: parseInt(restaurantId),
         userId: parseInt(userId),
       },
@@ -120,11 +141,12 @@ export async function POST(request) {
           liquorPercent: shift.liquorPercent,
           foodSales: shift.foodSales,
           foodPercent: shift.foodPercent,
+          creditTips: shift.creditTips,
+          cashTips: shift.cashTips,
           totalTips: shift.totalTips,
           averageTipPercent: shift.averageTipPercent,
           creditTipsAfterTipout: shift.creditTipsAfterTipout,
-          creditTips: shift.creditTips,
-          cashTips: shift.cashTips,
+          tipoutPercent: shift.tipoutPercent,
         },
       },
       { status: 201 }
