@@ -1,7 +1,6 @@
 // SHIFT DATA ENTRY FORM PAGE
 "use client";
 import Link from "next/link";
-
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import "../restaurants.css";
@@ -9,12 +8,37 @@ import "../restaurants.css";
 export default function RestaurantDashboard() {
   const params = useParams();
   const restaurantId = params.id;
+
+  // HELPER FUNCTION TO FORMAT MONETARY VALUES
+  const formatMonetaryValue = (value) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(value);
+  };
+
+  // LIST OF MONETARY FIELDS TO FORMAT
+  const monetaryFields = [
+    "netRevenue",
+    "totalWithTax",
+    "wineSales",
+    "beerSales",
+    "liquorSales",
+    "foodSales",
+    "creditTips",
+    "cashTips",
+    "totalTips",
+    "creditTipsAfterTipout",
+    "hourlyWage",
+  ];
+
+  // RESTAURANT DATA STATE
   const [restaurant, setRestaurant] = useState(null);
   const [shifts, setShifts] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // SHIFT DATA STATE
+  // SHIFT DATA ENTRY FORM STATE
   const [shiftData, setShiftData] = useState({
     date: "",
     dayOfWeek: "",
@@ -57,6 +81,7 @@ export default function RestaurantDashboard() {
     }
   };
 
+  // HANDLE SHIFT DATA ENTRY FORM SUBMISSION
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -104,11 +129,13 @@ export default function RestaurantDashboard() {
     }
   };
 
+  // LOADING STATE
   if (loading) {
     return <div className="restaurants-container">Loading...</div>;
   }
   console.log("shifts", shifts);
 
+  // KEY LABELS FOR SHIFT DATA ENTRY FORM
   const keyLabels = {
     id: "ID",
     date: "Date",
@@ -134,6 +161,7 @@ export default function RestaurantDashboard() {
     hourlyWage: "Hourly Wage",
   };
 
+  // MAIN RETURN STATEMENT
   return (
     <main className="restaurants-container">
       <div className="dashboard-header">
@@ -160,6 +188,8 @@ export default function RestaurantDashboard() {
                       ? new Date(value).toLocaleDateString("en-US", {
                           timeZone: "UTC",
                         })
+                      : monetaryFields.includes(key)
+                      ? formatMonetaryValue(value)
                       : value.toString()}
                   </div>
                 ))}
@@ -184,6 +214,7 @@ export default function RestaurantDashboard() {
           />
 
           {/* Day of the Week */}
+          <label>Day of the Week</label>
           <input
             type="text"
             placeholder="Day of the Week"
@@ -197,6 +228,7 @@ export default function RestaurantDashboard() {
           />
 
           {/* Total Checks */}
+          <label>Total Checks</label>
           <input
             type="number"
             placeholder="Total Checks"
@@ -223,6 +255,7 @@ export default function RestaurantDashboard() {
           />
 
           {/* Net Revenue */}
+          <label>Net Revenue</label>
           <input
             type="number"
             placeholder="Net Revenue"
@@ -251,6 +284,7 @@ export default function RestaurantDashboard() {
           {/* TODO: Average Check Per Cover Calculation */}
 
           {/* Total Wine Sales Amount */}
+          <label>Total Wine Sales Amount</label>
           <input
             type="number"
             placeholder="Total Wine Sales Amount"
@@ -265,6 +299,7 @@ export default function RestaurantDashboard() {
           {/* TODO: Average Wine Percent of Sales Calculation */}
 
           {/* Total Beer Sales Amount */}
+          <label>Total Beer Sales Amount</label>
           <input
             type="number"
             placeholder="Total Beer Sales Amount"
@@ -279,6 +314,7 @@ export default function RestaurantDashboard() {
           {/* TODO: Average Beer Percent of Sales Calculation */}
 
           {/* Total Liquor Sales Amount */}
+          <label>Total Liquor Sales Amount</label>
           <input
             type="number"
             placeholder="Total Liquor Sales Amount"
@@ -293,6 +329,7 @@ export default function RestaurantDashboard() {
           {/* TODO: Average Liquor Percent of Sales Calculation */}
 
           {/* Total Food Sales Amount */}
+          <label>Total Food Sales Amount</label>
           <input
             type="number"
             placeholder="Total Food Sales Amount"
@@ -304,6 +341,8 @@ export default function RestaurantDashboard() {
             step="0.01"
           />
 
+          {/* CREDIT TIPS */}
+          <label>Credit Tips</label>
           <input
             type="number"
             placeholder="Credit Tips"
@@ -315,6 +354,9 @@ export default function RestaurantDashboard() {
             step="0.01"
             required
           />
+
+          {/* CASH TIPS */}
+          <label>Cash Tips</label>
           <input
             type="number"
             placeholder="Cash Tips"
@@ -326,6 +368,7 @@ export default function RestaurantDashboard() {
             step="0.01"
             required
           />
+
           <div className="restaurant-form-buttons">
             <button type="submit" className="submit-button">
               Add Shift
