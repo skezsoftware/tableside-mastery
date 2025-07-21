@@ -106,7 +106,7 @@ export default function RestaurantDashboard() {
       if (response.ok) {
         const data = await response.json();
         console.log("Shift created:", data);
-        
+
         // Hide form and refresh data
         setShowForm(false);
         fetchRestaurantData();
