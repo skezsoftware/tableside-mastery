@@ -1,31 +1,33 @@
-/* GLOBAL CSS PAGE */
+/* GLOBAL STYLES FOR TABLESIDE MASTERY */
 
-@import "tailwindcss";
-
+/* ===== FONT VARIABLES ===== */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --font-heading: var(--font-geist-sans);
+  --font-body: var(--font-geist-sans);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ===== COLOR PALETTE ===== */
+:root {
+  --color-primary: #007bff;    /* Blue - main brand */
+  --color-secondary: #6c757d;  /* Gray - secondary */
+  --color-success: #28a745;    /* Green - success */
+  --color-warning: #ffc107;    /* Yellow - warning */
+  --color-neutral: #212529;    /* Dark gray - text */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ===== BASE STYLES ===== */
+* {
+  box-sizing: border-box;
 }
 
 body {
-  font-size: 1rem;
-  max-width: 1200px;
-  margin: 0 auto;
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
+  margin: 0;
+  padding: 0;
+}
+
+/* ===== TYPOGRAPHY ===== */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 600;
 }
