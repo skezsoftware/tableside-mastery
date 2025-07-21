@@ -1,3 +1,8 @@
+/* LOGIN PAGE STYLES */
+/* Authentication page styling for Tableside Mastery */
+
+/* ===== MAIN CONTAINER ===== */
+/* Centers the login form on the page */
 .login-container {
   min-height: 50vh;
   display: flex;
@@ -6,41 +11,57 @@
   background-color: #f9fafb;
 }
 
+/* ===== FORM CONTAINER ===== */
+/* Wrapper for the login form and title */
 .login-form-container {
   width: 100%;
 }
 
+/* ===== PAGE TITLE ===== */
+/* Main heading for the login page */
 .login-title {
   text-align: center;
   color: #111827;
 }
 
+/* ===== LOGIN FORM ===== */
+/* Main form container with vertical layout */
 .login-form {
   display: flex;
   flex-direction: column;
 }
 
+/* ===== INPUT GROUPS ===== */
+/* Container for each form field with label and input */
 .input-group {
   display: flex;
   flex-direction: column;
 }
 
+/* ===== INPUT LABELS ===== */
+/* Labels for form fields */
 .input-label {
   color: #374151;
 }
 
+/* ===== INPUT FIELDS ===== */
+/* Text input styling for email and password */
 .input-field {
   width: 100%;
   color: #111827;
   background-color: white;
 }
 
+/* ===== INPUT FOCUS STATES ===== */
+/* Visual feedback when input is focused */
 .input-field:focus {
   outline: none;
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
+/* ===== SUBMIT BUTTON ===== */
+/* Primary action button for form submission */
 .submit-button {
   width: 100%;
   background-color: #3b82f6;
@@ -48,12 +69,16 @@
   cursor: pointer;
 }
 
+/* ===== BUTTON HOVER STATES ===== */
+/* Visual feedback when button is hovered */
 .submit-button:hover {
   background-color: #2563eb;
 }
 
+/* ===== HELP TEXT ===== */
+/* Descriptive text below form fields */
 .help-text {
   font-size: 0.95rem;
   color: #374151;
   margin-top: 0.25rem;
-} 
+}

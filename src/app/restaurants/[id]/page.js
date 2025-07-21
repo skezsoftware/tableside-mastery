@@ -1,15 +1,20 @@
-// SHIFT DATA ENTRY FORM PAGE
+// RESTAURANT DASHBOARD PAGE
+// Individual restaurant page showing shifts and shift entry form
 "use client";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
+import ShiftForm from "./ShiftForm";
 import "../restaurants.css";
 
+// RESTAURANT DASHBOARD COMPONENT
+// Manages restaurant data display, shift entry, and data formatting
 export default function RestaurantDashboard() {
   const params = useParams();
   const restaurantId = params.id;
 
-  // HELPER FUNCTION TO FORMAT MONETARY VALUES
+  // FORMATTING HELPER FUNCTIONS
+  // Format monetary values with currency symbol and commas
   const formatMonetaryValue = (value) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -17,12 +22,13 @@ export default function RestaurantDashboard() {
     }).format(value);
   };
 
-  // HELPER FUNCTION TO FORMAT PERCENTAGE VALUES
+  // Format percentage values with 2 decimal places
   const formatPercentageValue = (value) => {
     return `${parseFloat(value).toFixed(2)}%`;
   };
 
-  // LIST OF MONETARY FIELDS TO FORMAT
+  // FIELD CATEGORIZATION
+  // Lists of fields that need specific formatting
   const monetaryFields = [
     "netRevenue",
     "totalWithTax",
@@ -38,7 +44,6 @@ export default function RestaurantDashboard() {
     "hourlyWage",
   ];
 
-  // LIST OF PERCENTAGE FIELDS TO FORMAT
   const percentageFields = [
     "winePercent",
     "beerPercent",
@@ -48,40 +53,26 @@ export default function RestaurantDashboard() {
     "tipoutPercent",
   ];
 
-  // RESTAURANT DATA STATE
+  // COMPONENT STATE MANAGEMENT
+  // Tracks restaurant data, shifts, and form state
   const [restaurant, setRestaurant] = useState(null);
   const [shifts, setShifts] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // SHIFT DATA ENTRY FORM STATE
-  const [shiftData, setShiftData] = useState({
-    date: "",
-    dayOfWeek: "",
-    checks: "",
-    covers: "",
-    netRevenue: "",
-    tax: "",
-    totalWithTax: "",
-    wineSales: "",
-    beerSales: "",
-    liquorSales: "",
-    foodSales: "",
-    creditTips: "",
-    cashTips: "",
-    tipoutAmount: "",
-  });
-
+  // FETCH RESTAURANT DATA ON PAGE LOAD
+  // Loads restaurant details and shifts when component mounts
   useEffect(() => {
     fetchRestaurantData();
   }, [restaurantId]);
 
   // FETCH RESTAURANT DATA AND SHIFTS
+  // Retrieves restaurant information and associated shifts from API
   const fetchRestaurantData = async () => {
     try {
       const response = await fetch(`/api/restaurants/${restaurantId}`, {
         headers: {
-          "user-id": "1", // We'll make this dynamic later
+          "user-id": "1", // TODO: Make this dynamic based on logged-in user
         },
       });
 
@@ -99,47 +90,25 @@ export default function RestaurantDashboard() {
     }
   };
 
-  // HANDLE SHIFT DATA ENTRY FORM SUBMISSION
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  // HANDLE SHIFT FORM SUBMISSION
+  // Creates a new shift and refreshes the data
+  const handleShiftSubmit = async (shiftData) => {
     try {
       const response = await fetch("/api/shifts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "user-id": "1", // We'll make this dynamic later
+          "user-id": "1", // TODO: Make this dynamic based on logged-in user
         },
-        body: JSON.stringify({
-          restaurantId: restaurantId,
-          ...shiftData,
-        }),
+        body: JSON.stringify(shiftData),
       });
 
       if (response.ok) {
         const data = await response.json();
         console.log("Shift created:", data);
-
-        // CLEAR FORM AND HIDE IT
-        setShiftData({
-          date: "",
-          dayOfWeek: "",
-          checks: "",
-          covers: "",
-          netRevenue: "",
-          tax: "",
-          totalWithTax: "",
-          wineSales: "",
-          beerSales: "",
-          liquorSales: "",
-          foodSales: "",
-          creditTips: "",
-          cashTips: "",
-          tipoutAmount: "",
-        });
+        
+        // Hide form and refresh data
         setShowForm(false);
-
-        // REFRESH THE DATA
         fetchRestaurantData();
       } else {
         console.error("Failed to create shift");
@@ -149,13 +118,24 @@ export default function RestaurantDashboard() {
     }
   };
 
-  // LOADING STATE
-  if (loading) {
-    return <div className="restaurants-container">Loading...</div>;
-  }
-  console.log("shifts", shifts);
+  // HANDLE FORM CANCELLATION
+  // Hides the shift form
+  const handleFormCancel = () => {
+    setShowForm(false);
+  };
 
-  // KEY LABELS FOR SHIFT DATA ENTRY FORM
+  // LOADING STATE
+  // Shows loading message while data is being fetched
+  if (loading) {
+    return (
+      <div className="restaurants-container" role="main">
+        Loading...
+      </div>
+    );
+  }
+
+  // FIELD LABELS MAPPING
+  // Maps database field names to user-friendly display labels
   const keyLabels = {
     id: "ID",
     date: "Date",
@@ -186,11 +166,17 @@ export default function RestaurantDashboard() {
     hourlyWage: "Hourly Wage",
   };
 
-  // MAIN RETURN STATEMENT
+  // MAIN COMPONENT RENDER
   return (
-    <main className="restaurants-container">
+    <main className="restaurants-container" role="main">
+      {/* DASHBOARD HEADER */}
+      {/* Navigation and restaurant title */}
       <div className="dashboard-header">
-        <Link href="/restaurants" className="back-link">
+        <Link
+          href="/restaurants"
+          className="back-link"
+          aria-label="Back to restaurants list"
+        >
           Back to Restaurants (click)
         </Link>
         <h1 className="restaurants-title">
@@ -198,8 +184,9 @@ export default function RestaurantDashboard() {
         </h1>
       </div>
 
-      {/* SHIFTS LIST */}
-      <section className="shifts-list">
+      {/* SHIFTS LIST SECTION */}
+      {/* Displays all shifts for this restaurant with formatted data */}
+      <section className="shifts-list" aria-label="Shifts">
         {shifts.length === 0 ? (
           <p>No shifts yet. Add your first shift!</p>
         ) : (
@@ -226,226 +213,23 @@ export default function RestaurantDashboard() {
         )}
       </section>
 
-      {/* ADD SHIFT FORM */}
+      {/* SHIFT FORM */}
+      {/* Form for entering new shift data */}
       {showForm && (
-        <form className="add-restaurant-form" onSubmit={handleSubmit}>
-          {/* Date Selector */}
-          <input
-            type="date"
-            value={shiftData.date}
-            onChange={(e) =>
-              setShiftData({ ...shiftData, date: e.target.value })
-            }
-            className="restaurant-input"
-            required
-          />
-
-          {/* Day of the Week */}
-          <label>Day of the Week</label>
-          <input
-            type="text"
-            placeholder="Day of the Week"
-            value={shiftData.dayOfWeek}
-            onChange={(e) =>
-              setShiftData({ ...shiftData, dayOfWeek: e.target.value })
-            }
-            className="restaurant-input"
-            step="0.01"
-            required
-          />
-
-          {/* Total Checks */}
-          <label>Total Checks</label>
-          <input
-            type="number"
-            placeholder="Total Checks"
-            value={shiftData.checks}
-            onChange={(e) =>
-              setShiftData({ ...shiftData, checks: e.target.value })
-            }
-            className="restaurant-input"
-            step="0.01"
-            required
-          />
-
-          {/* Total Covers */}
-          <label>Total Covers</label>
-          <input
-            type="number"
-            placeholder="Total Covers"
-            value={shiftData.covers}
-            onChange={(e) =>
-              setShiftData({ ...shiftData, covers: e.target.value })
-            }
-            className="restaurant-input"
-            step="0.01"
-            required
-          />
-
-          {/* Net Revenue */}
-          <label>Net Revenue</label>
-          <input
-            type="number"
-            placeholder="Net Revenue"
-            value={shiftData.netRevenue}
-            onChange={(e) =>
-              setShiftData({ ...shiftData, netRevenue: e.target.value })
-            }
-            className="restaurant-input"
-            step="0.01"
-            required
-          />
-
-          {/* Tax Amount */}
-          <label>Tax Amount</label>
-          <input
-            type="number"
-            placeholder="Tax Amount"
-            value={shiftData.tax}
-            onChange={(e) =>
-              setShiftData({ ...shiftData, tax: e.target.value })
-            }
-            className="restaurant-input"
-            step="0.01"
-            required
-          />
-
-          {/* Total with Tax (Calculated) */}
-          <label>Total with Tax (Calculated)</label>
-          <input
-            type="number"
-            placeholder="Total with Tax"
-            value={shiftData.totalWithTax}
-            onChange={(e) =>
-              setShiftData({ ...shiftData, totalWithTax: e.target.value })
-            }
-            className="restaurant-input"
-            step="0.01"
-            required
-          />
-
-          {/* TODO: Average Check Per Cover Calculation */}
-
-          {/* Total Wine Sales Amount */}
-          <label>Total Wine Sales Amount</label>
-          <input
-            type="number"
-            placeholder="Total Wine Sales Amount"
-            value={shiftData.wineSales}
-            onChange={(e) =>
-              setShiftData({ ...shiftData, wineSales: e.target.value })
-            }
-            className="restaurant-input"
-            step="0.01"
-          />
-
-          {/* TODO: Average Wine Percent of Sales Calculation */}
-
-          {/* Total Beer Sales Amount */}
-          <label>Total Beer Sales Amount</label>
-          <input
-            type="number"
-            placeholder="Total Beer Sales Amount"
-            value={shiftData.beerSales}
-            onChange={(e) =>
-              setShiftData({ ...shiftData, beerSales: e.target.value })
-            }
-            className="restaurant-input"
-            step="0.01"
-          />
-
-          {/* TODO: Average Beer Percent of Sales Calculation */}
-
-          {/* Total Liquor Sales Amount */}
-          <label>Total Liquor Sales Amount</label>
-          <input
-            type="number"
-            placeholder="Total Liquor Sales Amount"
-            value={shiftData.liquorSales}
-            onChange={(e) =>
-              setShiftData({ ...shiftData, liquorSales: e.target.value })
-            }
-            className="restaurant-input"
-            step="0.01"
-          />
-
-          {/* TODO: Average Liquor Percent of Sales Calculation */}
-
-          {/* Total Food Sales Amount */}
-          <label>Total Food Sales Amount</label>
-          <input
-            type="number"
-            placeholder="Total Food Sales Amount"
-            value={shiftData.foodSales}
-            onChange={(e) =>
-              setShiftData({ ...shiftData, foodSales: e.target.value })
-            }
-            className="restaurant-input"
-            step="0.01"
-          />
-
-          {/* CREDIT TIPS */}
-          <label>Credit Tips</label>
-          <input
-            type="number"
-            placeholder="Credit Tips"
-            value={shiftData.creditTips}
-            onChange={(e) =>
-              setShiftData({ ...shiftData, creditTips: e.target.value })
-            }
-            className="restaurant-input"
-            step="0.01"
-            required
-          />
-
-          {/* CASH TIPS */}
-          <label>Cash Tips</label>
-          <input
-            type="number"
-            placeholder="Cash Tips"
-            value={shiftData.cashTips}
-            onChange={(e) =>
-              setShiftData({ ...shiftData, cashTips: e.target.value })
-            }
-            className="restaurant-input"
-            step="0.01"
-            required
-          />
-
-          {/* TIPOUT AMOUNT */}
-          <label>Tipout Amount</label>
-          <input
-            type="number"
-            placeholder="Tipout Amount"
-            value={shiftData.tipoutAmount}
-            onChange={(e) =>
-              setShiftData({ ...shiftData, tipoutAmount: e.target.value })
-            }
-            className="restaurant-input"
-            step="0.01"
-            required
-          />
-
-          <div className="restaurant-form-buttons">
-            <button type="submit" className="submit-button">
-              Add Shift
-            </button>
-            <button
-              type="button"
-              className="cancel-button"
-              onClick={() => setShowForm(false)}
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
+        <ShiftForm
+          restaurantId={restaurantId}
+          onSubmit={handleShiftSubmit}
+          onCancel={handleFormCancel}
+        />
       )}
 
-      {/* Add Shift Button */}
+      {/* ADD SHIFT BUTTON */}
+      {/* Toggle button to show/hide the add shift form */}
       {!showForm && (
         <button
           className="add-restaurant-button"
           onClick={() => setShowForm(true)}
+          aria-label="Add new shift"
         >
           Add New Shift
         </button>
